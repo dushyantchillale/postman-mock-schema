@@ -1,0 +1,912 @@
+openapi: 3.0.0
+info:
+  title: 'Mock Service #reference'
+  description: API Documentation for managing Postman Hosted Mock Servers
+  contact:
+    name: Pratik Mandrekar
+    email: pratik@getpostman.com
+  version: '1.0'
+servers:
+- url: https://mock-beta.pstmn.io
+  description: Beta Mock API
+paths:
+  /mocks:
+    post:
+      tags:
+      - CRUD Endpoints
+      summary: Create a Mock
+      description: '`versionTag` in request body is optional. Defaults to `current` if not passed.'
+      operationId: createMock
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        required: false
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: Content-Type
+        in: header
+        description: ''
+        required: true
+        schema:
+          $ref: '#/components/schemas/ApplicationJson'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection:
+                  type: string
+                versionTag:
+                  type: string
+              example:
+                collection: '{{collectionId}}'
+                versionTag: '{{versionTag}}'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/MockWithoutPopulate'
+    get:
+      tags:
+      - CRUD Endpoints
+      summary: Get Mocks based on query parameters specified
+      operationId: getMocks
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: populate
+        in: query
+        description: Optional. Populates metadata for collection, environment and user properties of the mock
+        schema:
+          type: boolean
+          example: true
+      responses:
+        200:
+          description: 'get all mocks based on query params'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MockListWithoutPopulate'
+                  - $ref: '#/components/schemas/MockListWithPopulate'
+  /mocks/{mockId}:
+    put:
+      tags:
+      - CRUD Endpoints
+      summary: Update a Mock
+      operationId: updateMockById
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: Content-Type
+        in: header
+        schema:
+          $ref: '#/components/schemas/ApplicationJson'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                versionTag:
+                  type: string
+              example:
+                name: updated name
+                versionTag: 09a52e05-4244-4d9d-9c49-44c2e49a5b28
+      responses:
+        200:
+          description: 'TODO'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockWithoutPopulate'
+    delete:
+      tags:
+      - CRUD Endpoints
+      summary: Delete a Mock
+      operationId: deleteMockById
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          type: string
+          example: '{{user_d}}'
+      - name: Content-Type
+        in: header
+        schema:
+          $ref: '#/components/schemas/ApplicationJson'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockWithoutPopulate'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+    get:
+      tags:
+      - CRUD Endpoints
+      summary: List a single Mock
+      operationId: getMockById
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockWithoutPopulate'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+  /mocks/{mockId}/publish:
+    post:
+      tags:
+      - CRUD Endpoints
+      summary: Publish a Mock
+      description: Make a private Mock public
+      operationId: publishMock
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: Content-Type
+        in: header
+        schema:
+          $ref: '#/components/schemas/ApplicationJson'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: object
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+  /mocks/{mockId}/unpublish:
+    delete:
+      tags:
+      - CRUD Endpoints
+      summary: Unpublish a Mock
+      description: Make a public Mock private.
+      operationId: UnpublishAMock
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: Content-Type
+        in: header
+        schema:
+          $ref: '#/components/schemas/ApplicationJson'
+      - name: x-access-token
+        in: header
+        schema:
+          $ref: '#/components/schemas/UserAccessToken'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: object
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404'
+  /mocks/{mockId}/deleted:
+    get:
+      tags:
+      - CRUD Endpoints
+      summary: Has Mock been deleted?
+      description: Returns true or false based on whether the specified Mock was deleted
+      operationId: isMockDeleted
+      parameters:
+      - name: user_id
+        in: query
+        description: Optional. Needed when called without an access token using Basic Auth.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: mockId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsMockDeleted'
+  /x/mocks/{mock_id}/activate:
+    put:
+      tags:
+      - Support Dashboard
+      summary: Activate a Mock
+      description: Mocks are deactivated if the underlying environment has been deleted. Inactive Mocks throw an error when an attempt is made to use them.
+      operationId: activateMock
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Used for auth, fetching user's team, updating mocks.
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: mock_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: The mock was activated successfuly
+  /x/mocks/{mock_id}/deactivate:
+    put:
+      tags:
+      - Support Dashboard
+      summary: Deactivate a Mock
+      description: 'TODO: Add Description'
+      operationId: DeactivateAMock
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Used for auth, fetching user's team, updating mocks.
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: mock_id
+        in: path
+        description: ''
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: The mock was deactivated successfuly
+  /x/teams/{team_id}/mocks:
+    get:
+      tags:
+      - Support Dashboard
+      summary: Find Team Mocks
+      description: Returns mocks for the `user_ids` that have been specified.
+        The `{{team_id}}` is irrelevant.
+      operationId: findTeamMocks
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Used for auth, fetching user's team, updating mocks.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: '{{user_id}}'
+      - name: user_ids
+        in: query
+        description: Optional. Mocks created by members of the team specified as a comma separated list of users, defaults to {{user_id}} if none specified.
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          example: '{{user_id1}},{{user_id2}}'
+      - name: x-support-secret
+        in: header
+        description: 'TODO'
+        required: true
+        schema:
+          type: string
+          example: '{{support_secret}}'
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockListWithoutPopulate'
+  /x/collections/{collection_id}:
+    delete:
+      tags:
+      - Endpoints for Orchestration
+      summary: Delete Mocks for Collection
+      description: Delete all Mocks for given ```{{ collection_id }}```. Used when the Collection has been deleted or removed from the Workspace that the Mock belongs to.
+      operationId: deleteMocksForCollection
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Used for auth and fetching user's team.
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: collection_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Mocks deleted successfully
+  /x/environments/{environment_id}:
+    delete:
+      tags:
+      - Endpoints for Orchestration
+      summary: Deactivate Mocks For Environment
+      description: Deactivate all Mocks matching provided ```{{ environment_id }}```. Called when an Environment is deleted or removed from a Workspace.
+      operationId: DeactivateMocksForEnvironment
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Used for auth and fetching user's team.
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: environment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockListWithoutPopulate'
+  /x/users/{userBeingRemovedFromTeamId}/collections:
+    delete:
+      tags:
+      - Endpoints for Orchestration
+      summary: Delete Mocks as a side-effect of removing a user from the team
+      description: >-
+        * Delete Mocks created by others on collections owned by this ```{{ userBeingRemovedFromTeamId }}```
+
+        * Delete Mocks created by this user on collections not owned by this ```{{ userBeingRemovedFromTeamId }}```
+      operationId: Delete mocks as a sideEffect of removing a user from the team
+      parameters:
+      - name: user_id
+        in: query
+        description: Required. Identity of user performing this action
+        required: true
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: userBeingRemovedFromTeamId
+        in: path
+        description: 'TODO'
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: object
+                example: {}
+              example: {}
+  /x/users/{user_id}:
+    delete:
+      tags:
+      - Endpoints for Orchestration
+      summary: Delete all Mocks created by this User
+      description: Delete Mocks created by this ```{{ user_id }}```
+      operationId: deleteUserMocks
+      parameters:
+      - name: user_id
+        in: path
+        description: Required. Delete mocks created by this user.
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      responses:
+        200:
+          description: Mocks deleted successfully
+          content:
+            text/plain:
+              schema:
+                type: object
+                example: {}
+              example: {}
+  /x/collections/{source_collection_id}/transfer:
+    put:
+      tags:
+      - Endpoints for Orchestration
+      summary: Transfer Mocks Between Collections
+      description: Transfer Mocks from ```{{ source_collection_id }}``` to ```{{ destination_collection_id }}``` as part of transferring ownership on the underlying collection.
+      operationId: transferMocksBetweenCollections
+      parameters:
+      - name: destination
+        in: query
+        description: Required. Destination collection ID
+        required: true
+        schema:
+          type: string
+          example: '{{destination_collection_id}}'
+      - name: user_id
+        in: query
+        description: Required. Used for auth, fetching user's team, updating mocks.
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: source_collection_id
+        in: path
+        description: 'collection ID of source collection'
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Mock Transfered Successfully
+          content:
+            text/plain:
+              schema:
+                type: object
+                example: {}
+              example: {}
+  /x/environments/{source_environment_id}/transfer:
+    put:
+      tags:
+      - Endpoints for Orchestration
+      summary: Transfer Mocks Between Environments
+      description: Transfer Mocks from ```{{ source_environment_id }}``` to ```{{ destination_environment_id }}```
+      operationId: TransferMocksBetweenEnvironments
+      parameters:
+      - name: destination
+        in: query
+        description: Required. Destination environment ID.
+        required: true
+        schema:
+          type: string
+          example: '{{destination_environment_id}}'
+      - name: user_id
+        in: query
+        description: Required. Used for auth, fetching user's team, updating mocks.
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      - name: source_environment_id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: object
+                example: {}
+              example: {}
+    
+components:
+  schemas:
+    Collection:
+      title: Collection
+      type: object
+      properties:
+        id:
+          type: string
+        owner:
+          $ref: '#/components/schemas/Owner'
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        auth:
+          type: string
+          nullable: true
+        events:
+          type: array
+          items:
+            type: string
+          description: ''
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variable'
+          description: ''
+        order:
+          type: array
+          items:
+            type: string
+          description: ''
+        folders_order:
+          type: array
+          items:
+            type: string
+          description: ''
+        lastUpdatedBy:
+          $ref: '#/components/schemas/LastUpdatedBy'
+        remote_id:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        lastRevision:
+          type: integer
+          format: int32
+        versionTag:
+          type: string
+        subscribers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscriber'
+          description: ''
+        team:
+          type: string
+          nullable: true
+        remoteLink:
+          type: string
+          nullable: true
+        num_folders:
+          type: integer
+          format: int32
+        num_requests:
+          type: integer
+          format: int32
+    Owner:
+      title: Owner
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+    Variable:
+      title: Variable
+      required:
+      - id
+      - key
+      - value
+      - type
+      - enabled
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+        enabled:
+          type: boolean
+      example:
+        id: baseUrl
+        key: baseUrl
+        value: http://petstore.swagger.io/v1
+        type: string
+        enabled: true
+    LastUpdatedBy:
+      title: LastUpdatedBy
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+    Subscriber:
+      title: Subscriber
+      required:
+      - id
+      - name
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+      example:
+        id: 6291
+        name: Pratik Mandrekar
+        username: pratikmandrekar
+    Environment:
+      title: Environment
+      type: object
+      properties:
+        owner:
+          type: string
+        team:
+          type: string
+          nullable: true
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    CreatedBy:
+      title: CreatedBy
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        apiVersion:
+          type: integer
+          format: int32
+      example:
+        id: 6291
+        email: pratik@getpostman.com
+        username: pratikmandrekar
+        apiVersion: 1
+    UpdatedBy:
+      title: UpdatedBy
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        apiVersion:
+          type: integer
+          format: int32
+      example:
+        id: 6291
+        email: pratik@getpostman.com
+        username: pratikmandrekar
+        apiVersion: 1
+    404:
+      title: '404'
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            name:
+              type: string
+            message:
+              type: string
+          example:
+            name: mockNotFoundError
+            message: We couldn't find the mock you are trying to access. Please verify that the mock exists by refreshing your mocks list.
+    UserId:
+      title: UserId
+      type: string
+      example: '{{user_id}}'
+    ApplicationJson:
+      title: ApplicationJson
+      type: string
+      example: application/json
+    UserAccessToken:
+      title: UserAccessToken
+      type: string
+      example: '{{user_accessToken}}'
+    IsMockDeleted:
+      title: IsMockDeleted
+      type: object
+      properties:
+        model_id:
+          type: string
+        meta:
+          $ref: '#/components/schemas/Meta'
+        data:
+          $ref: '#/components/schemas/Data'
+      example:
+        model_id: <mock_id>
+        meta:
+          model: mock
+          action: getDeletedStatus
+        data:
+          deleted: true
+          collection: <collection-uid>
+          environment: <environment-uid> or null
+    Meta:
+      title: Meta
+      type: object
+      properties:
+        model:
+          type: string
+        action:
+          type: string
+      example:
+        model: mock
+        action: getDeletedStatus
+    Data:
+      title: Data
+      type: object
+      properties:
+        deleted:
+          type: boolean
+        collection:
+          type: string
+        environment:
+          type: string
+      example:
+        deleted: true
+        collection: <collection-uid>
+        environment: <environment-uid> or null
+    MockWithoutPopulate:
+      title: ResponseGetTeamMocksWithoutPopulate
+      type: object
+      properties:
+        published:
+          type: boolean
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        collection:
+          type: string
+        versionTag:
+          type: string
+          nullable: true
+        environment:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        createdBy:
+          type: string
+        team:
+          type: string
+          nullable: true
+        updatedBy:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: string
+      example:
+        published: true
+        id: 0ee5ff89-ac93-4155-8eee-69b519d76b8c
+        name: Pet store mock
+        description: 
+        collection: 6291-76d3eb24-7cc5-4278-9d24-463f4ad97a0a
+        versionTag: 17b4b088-c8d0-46ea-bbdd-d98fdf5894a4
+        environment: 
+        active: true
+        createdBy: 6291
+        team: 
+        updatedBy: 6291
+        createdAt: 2019-03-21T11:16:30Z
+        updatedAt: 2019-03-21T11:16:30Z
+        url: https://0ee5ff89-ac93-4155-8eee-69b519d76b8c.mock-beta.pstmn.io
+        publishedAt: 2019-03-21T11:16:30Z
+    MockListWithoutPopulate:
+      type: array
+      items:
+        $ref: '#/components/schemas/MockWithoutPopulate'
+    MockWithPopulate:
+      title: MockWithPopulate
+      type: object
+      properties:
+        published:
+          type: boolean
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        collection:
+          $ref: '#/components/schemas/Collection'
+        environment:
+          $ref: '#/components/schemas/Environment'
+        active:
+          type: boolean
+        createdBy:
+          $ref: '#/components/schemas/CreatedBy'
+        team:
+          type: string
+          nullable: true
+        updatedBy:
+          $ref: '#/components/schemas/UpdatedBy'
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: string
+    MockListWithPopulate:
+      type: array
+      items:
+        $ref: '#/components/schemas/MockWithPopulate'
+        
